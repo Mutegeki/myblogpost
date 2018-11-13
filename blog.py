@@ -1,18 +1,28 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://post:post123@localhost/blog'
-db = SQLAlchemy(blog)
+#app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://blog:blog123@localhost/posts'
+db = SQLAlchemy(app)
 
-class Person(db.Model):
-    id = db.Column(db.integer, primary_key=True)
-    fisrtName = db.Column(db.string(120), unique=False)
+class Blogpost(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title= db.Column(db.String(50))
+    subtitle= db.Column(db.String(50))
+    author= db.Column(db.String(20))
+    date_posted = db.Column(db.DateTime)
+    content = db.Column(db.Text)
+    
+    def __init__(self, title, subtitle, author, date_posted, content):
+        self.title = title
+        self.subtitle = subtitle
+        self.author = author
+        self.date_posted = date_posted
+        self.content = content
 
-    def __init__(self, fisrtName):
-        self.fisrtName = fisrtName
 
 @app.route('/')
 def index():
@@ -30,6 +40,20 @@ def contact():
 def post():
     return render_template('post.html')
 
+
+@app.route('/add')
+def add():
+    return render_template('add.html')
+
+
+@app.route('/addpost', methods=['POST'])
+def addpost():
+    title = request.form['title']
+    subtitle = request.form['subtitle']
+    author = request.form['author']
+    content = request.form['content']
+
+    post = Blogpost(title=title, subtitle=subtitle, author=author, content=content, date_posted=datetime.now())
+    return redirect(url_for('index'))
 if __name__ == '__main__:':
-    db.create_all()
     blog.run(debug=True)
