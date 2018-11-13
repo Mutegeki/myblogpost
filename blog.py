@@ -4,7 +4,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-#app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://blog:blog123@localhost/posts'
 db = SQLAlchemy(app)
 
@@ -36,9 +36,11 @@ def about():
 def contact():
     return render_template('contact.html')
 
-@app.route('/post')
-def post():
-    return render_template('post.html')
+@app.route('/post/<int:post_id>')
+def post(post_id):
+    post = Blogpost.query.filter_by(id=post_id).one()
+
+    return render_template('post.html', post=post)
 
 
 @app.route('/add')
@@ -54,6 +56,10 @@ def addpost():
     content = request.form['content']
 
     post = Blogpost(title=title, subtitle=subtitle, author=author, content=content, date_posted=datetime.now())
+
+    db.session.add(post)
+    db.session.commit()
+
     return redirect(url_for('index'))
 if __name__ == '__main__:':
     blog.run(debug=True)
