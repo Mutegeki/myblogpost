@@ -26,21 +26,23 @@ class Blogpost(db.Model):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    #gettig all from the database
+    #posts = Blogpost.query.all()
+    #here we want to post the date in order by date
+    posts = Blogpost.query.order_by(Blogpost.date_posted.desc()).all()
+    return render_template('index.html', posts=posts)
 
 @app.route('/about')
 def about():
     return render_template('about.html')
 
-@app.route('/contact')
-def contact():
-    return render_template('contact.html')
-
 @app.route('/post/<int:post_id>')
 def post(post_id):
     post = Blogpost.query.filter_by(id=post_id).one()
 
-    return render_template('post.html', post=post)
+    #date_posted = post.date_posted.strftime('%B %d, %Y')
+
+    return render_template('post.html', post=post,)
 
 
 @app.route('/add')
@@ -50,13 +52,15 @@ def add():
 
 @app.route('/addpost', methods=['POST'])
 def addpost():
+    #getting the information
     title = request.form['title']
     subtitle = request.form['subtitle']
     author = request.form['author']
     content = request.form['content']
 
     post = Blogpost(title=title, subtitle=subtitle, author=author, content=content, date_posted=datetime.now())
-
+    
+    #Saving them to database
     db.session.add(post)
     db.session.commit()
 
